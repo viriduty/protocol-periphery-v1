@@ -1,7 +1,5 @@
-@ensdomains/=node_modules/@ensdomains/
 @openzeppelin/=node_modules/@openzeppelin/
-@storyprotocol/=node_modules/@story-protocol/protocol-core/
-@storyprotocol-old/=node_modules/@storyprotocol/contracts-old/
+@storyprotocol/core/=node_modules/@story-protocol/protocol-core/contracts/
+@create3-deployer/=node_modules/@story-protocol/create3-deployer/
 ds-test/=lib/forge-std/lib/ds-test/src/
 forge-std/=lib/forge-std/src/
-hardhat/=node_modules/hardhat/
