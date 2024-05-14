@@ -1,3 +1,5 @@
+**Project Archived:** This repository has been archived and is no longer actively maintained. For the latest updates and ongoing development, please visit our new repository at [protocol-periphery-v1](https://github.com/storyprotocol/protocol-periphery-v1). We invite you to check out the new features and enhancements in the latest version. Thank you for your past and continued support!
+
 ## Foundry
 
 **Foundry is a blazing fast, portable and modular toolkit for Ethereum application development written in Rust.**
