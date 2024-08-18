@@ -56,6 +56,8 @@ contract UpgradeSPG is
                 accessControllerAddr,
                 ipAssetRegistryAddr,
                 licensingModuleAddr,
+                licenseRegistryAddr,
+                royaltyModuleAddr,
                 coreMetadataModuleAddr,
                 pilTemplateAddr,
                 licenseTokenAddr
