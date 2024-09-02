@@ -91,6 +91,7 @@ contract BaseTest is Test {
 
     address internal minter;
     address internal caller;
+    address internal feeRecipient;
 
     ISPGNFT internal nftContract;
     ISPGNFT[] internal nftContracts;
@@ -106,7 +107,10 @@ contract BaseTest is Test {
                 maxSupply: 100,
                 mintFee: 100 * 10 ** mockToken.decimals(),
                 mintFeeToken: address(mockToken),
-                owner: minter
+                mintFeeRecipient: feeRecipient,
+                owner: minter,
+                mintOpen: true,
+                isPublicMinting: false
             })
         );
         _;
@@ -221,6 +225,7 @@ contract BaseTest is Test {
                 address(ipGraphACL)
             )
         );
+
         licenseRegistry = LicenseRegistry(
             TestProxyHelper.deployUUPSProxy(
                 create3Deployer,

@@ -27,16 +27,19 @@ contract StoryProtocolGatewayTest is BaseTest {
     function setUp() public override {
         super.setUp();
         minter = alice;
+        feeRecipient = bob;
     }
 
     function test_SPG_createCollection() public withCollection {
-        uint256 mintFee = nftContract.mintFee();
-
         assertEq(nftContract.name(), "Test Collection");
         assertEq(nftContract.symbol(), "TEST");
         assertEq(nftContract.totalSupply(), 0);
         assertTrue(nftContract.hasRole(SPGNFTLib.MINTER_ROLE, alice));
-        assertEq(mintFee, 100 * 10 ** mockToken.decimals());
+        assertEq(nftContract.mintFee(), 100 * 10 ** mockToken.decimals());
+        assertEq(nftContract.mintFeeToken(), address(mockToken));
+        assertEq(nftContract.mintFeeRecipient(), bob);
+        assertTrue(nftContract.mintOpen());
+        assertFalse(nftContract.publicMinting());
     }
 
     modifier whenCallerDoesNotHaveMinterRole() {
@@ -428,14 +431,17 @@ contract StoryProtocolGatewayTest is BaseTest {
         nftContracts = new ISPGNFT[](10);
         bytes[] memory data = new bytes[](10);
         for (uint256 i = 0; i < 10; i++) {
-            data[i] = abi.encodeWithSignature(
-                "createCollection(string,string,uint32,uint256,address,address)",
+            data[i] = abi.encodeWithSelector(
+                spg.createCollection.selector,
                 "Test Collection",
                 "TEST",
                 100,
                 100 * 10 ** mockToken.decimals(),
                 address(mockToken),
-                minter
+                feeRecipient,
+                minter,
+                true,
+                false
             );
         }
 
@@ -450,6 +456,10 @@ contract StoryProtocolGatewayTest is BaseTest {
             assertEq(nftContracts[i].totalSupply(), 0);
             assertTrue(nftContracts[i].hasRole(SPGNFTLib.MINTER_ROLE, alice));
             assertEq(nftContracts[i].mintFee(), 100 * 10 ** mockToken.decimals());
+            assertEq(nftContracts[i].mintFeeToken(), address(mockToken));
+            assertEq(nftContracts[i].mintFeeRecipient(), bob);
+            assertTrue(nftContracts[i].mintOpen());
+            assertFalse(nftContracts[i].publicMinting());
         }
     }
 
