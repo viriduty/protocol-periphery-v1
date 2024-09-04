@@ -6,14 +6,15 @@ import { console2 } from "forge-std/console2.sol";
 import { Script } from "forge-std/Script.sol";
 import { UpgradeableBeacon } from "@openzeppelin/contracts/proxy/beacon/UpgradeableBeacon.sol";
 
-import { StoryProtocolGateway } from "../contracts/StoryProtocolGateway.sol";
-import { SPGNFT } from "../contracts/SPGNFT.sol";
+import { StoryProtocolGateway } from "../../contracts/StoryProtocolGateway.sol";
+import { GroupingWorkflows } from "../../contracts/GroupingWorkflows.sol";
+import { SPGNFT } from "../../contracts/SPGNFT.sol";
 
-import { StoryProtocolCoreAddressManager } from "./utils/StoryProtocolCoreAddressManager.sol";
-import { StoryProtocolPeripheryAddressManager } from "./utils/StoryProtocolPeripheryAddressManager.sol";
-import { StringUtil } from "./utils/StringUtil.sol";
-import { BroadcastManager } from "./utils/BroadcastManager.s.sol";
-import { JsonDeploymentHandler } from "./utils/JsonDeploymentHandler.s.sol";
+import { StoryProtocolCoreAddressManager } from "../utils/StoryProtocolCoreAddressManager.sol";
+import { StoryProtocolPeripheryAddressManager } from "../utils/StoryProtocolPeripheryAddressManager.sol";
+import { StringUtil } from "../utils/StringUtil.sol";
+import { BroadcastManager } from "../utils/BroadcastManager.s.sol";
+import { JsonDeploymentHandler } from "../utils/JsonDeploymentHandler.s.sol";
 
 contract UpgradeSPG is
     Script,
@@ -25,18 +26,24 @@ contract UpgradeSPG is
     using StringUtil for uint256;
 
     StoryProtocolGateway private spg;
+    GroupingWorkflows private groupingWorkflows;
     SPGNFT private spgNftImpl;
     UpgradeableBeacon private spgNftBeacon;
 
     constructor() JsonDeploymentHandler("main") {}
 
-    /// @dev To use, run the following command (e.g. for Sepolia):
-    /// forge script script/UpgradeSPG.s.sol:UpgradeSPG --rpc-url $RPC_URL --broadcast --verify -vvvv
+    /// @dev To use, run the following command (e.g., for Story Iliad testnet):
+    /// forge script script/upgrade/UpgradeSPG.s.sol:UpgradeSPG \
+    /// --rpc-url=$TESTNET_URL -vvvv --broadcast --priority-gas-price=1 --legacy \
+    /// --verify  --verifier=$VERIFIER_NAME --verifier-url=$VERIFIER_URL
+    ///
+    /// For detailed examples, see the documentation in `../../docs/DEPLOY_UPGRADE.md`.
     function run() public {
         _readStoryProtocolCoreAddresses();
         _readStoryProtocolPeripheryAddresses();
 
         spg = StoryProtocolGateway(spgAddr);
+        groupingWorkflows = GroupingWorkflows(groupingWorkflowsAddr);
         spgNftImpl = SPGNFT(spgNftImplAddr);
         spgNftBeacon = UpgradeableBeacon(spgNftBeaconAddr);
 
@@ -67,6 +74,7 @@ contract UpgradeSPG is
         // spg.upgradeToAndCall(address(newSpgImpl), "");
 
         _postdeploy("SPG", address(spg));
+        _writeAddress("GroupingWorkflows", address(groupingWorkflows));
         _writeAddress("SPGNFTBeacon", address(spgNftBeacon));
         _writeAddress("SPGNFTImpl", address(spgNftImpl));
     }
