@@ -28,4 +28,19 @@
 - `registerGroupAndAttachLicenseAndAddIps`: Registers a group IP → Attaches the given license terms to the group IP → Adds existing IPs to the group IP
 
 
+### Claiming IP Revenue
+- `transferToVaultAndSnapshotAndClaimByTokenBatch`:
+  - Transfers revenue tokens to ancestor IP’s royalty vault → Takes a snapshot of the royalty vault → Claims all available revenue tokens from the snapshot to the claimer’s wallet
+  - *Use Case*: For IP royalty token holders who want to claim both their direct revenue and royalties from descendant IPs.
+- `transferToVaultAndSnapshotAndClaimBySnapshotBatch`:
+  - Transfers revenue tokens to ancestor IP’s royalty vault → Takes a snapshot of the royalty vault → Claims all available revenue tokens from the new snapshot to the claimer’s wallet → Claims all available revenue tokens from each provided unclaimed snapshot to the claimer’s wallet
+  - *Use Case*: For IP royalty token holders who want to claim both direct revenue and descendant royalties from the latest snapshot and previously taken snapshots.
+- `snapshotAndClaimByTokenBatch`:
+  - Takes a snapshot of the royalty vault → Claims all available revenue tokens from the new snapshot to the claimer’s wallet
+  - *Use Case*: For IP royalty token holders who want to claim the current revenue in their IP’s royalty vault (which may or may not include descendant royalties).
+- `snapshotAndClaimBySnapshotBatch`:
+  - Takes a snapshot of the royalty vault → Claims all available revenue tokens from the new snapshot to the claimer’s wallet → Claims all available revenue tokens from each provided unclaimed snapshot to the claimer’s wallet
+  - *Use Case*: For IP royalty token holders who want to claim the current revenue in their IP’s royalty vault from the latest snapshot and previously taken snapshots.
+
+
 > 📚 For full contract interfaces, check out `contracts/interfaces`.
