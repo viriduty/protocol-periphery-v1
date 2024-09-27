@@ -31,18 +31,18 @@ contract GroupingIntegration is BaseIntegration {
     function run() public override {
         super.run();
         _beginBroadcast();
-        _logTestStart("GroupingIntegration");
         _setUpTest();
         _test_GroupingIntegration_mintAndRegisterIpAndAttachLicenseAndAddToGroup();
         _test_GroupingIntegration_registerIpAndAttachLicenseAndAddToGroup();
         _test_GroupingIntegration_registerGroupAndAttachLicenseAndAddIps();
         _test_GroupingIntegration_multicall_mintAndRegisterIpAndAttachLicenseAndAddToGroup();
         _test_GroupingIntegration_multicall_registerIpAndAttachLicenseAndAddToGroup();
-        _logTestEnd("GroupingIntegration");
         _endBroadcast();
     }
 
-    function _test_GroupingIntegration_mintAndRegisterIpAndAttachLicenseAndAddToGroup() private {
+    function _test_GroupingIntegration_mintAndRegisterIpAndAttachLicenseAndAddToGroup() private
+        logTest("test_GroupingIntegration_mintAndRegisterIpAndAttachLicenseAndAddToGroup")
+    {
         uint256 deadline = block.timestamp + 1000;
 
         // Get the signature for setting the permission for calling `addIp` function in `GroupingModule`
@@ -83,7 +83,9 @@ contract GroupingIntegration is BaseIntegration {
         assertEq(licenseTermsId, testLicenseTermsId);
     }
 
-    function _test_GroupingIntegration_registerIpAndAttachLicenseAndAddToGroup() private {
+    function _test_GroupingIntegration_registerIpAndAttachLicenseAndAddToGroup() private
+        logTest("test_GroupingIntegration_registerIpAndAttachLicenseAndAddToGroup")
+    {
         StoryUSD.mint(testSender, testMintFee);
         StoryUSD.approve(address(spgNftContract), testMintFee);
         uint256 tokenId = spgNftContract.mint(testSender, testIpMetadata.nftMetadataURI);
@@ -143,7 +145,9 @@ contract GroupingIntegration is BaseIntegration {
         assertEq(licenseTermsId, testLicenseTermsId);
     }
 
-    function _test_GroupingIntegration_registerGroupAndAttachLicenseAndAddIps() private {
+    function _test_GroupingIntegration_registerGroupAndAttachLicenseAndAddIps() private
+        logTest("test_GroupingIntegration_registerGroupAndAttachLicenseAndAddIps")
+    {
         address newGroupId = groupingWorkflows.registerGroupAndAttachLicenseAndAddIps({
             groupPool: groupRewardPool,
             ipIds: ipIds,
@@ -166,7 +170,9 @@ contract GroupingIntegration is BaseIntegration {
         assertEq(licenseTermsId, testLicenseTermsId);
     }
 
-    function _test_GroupingIntegration_multicall_mintAndRegisterIpAndAttachLicenseAndAddToGroup() private {
+    function _test_GroupingIntegration_multicall_mintAndRegisterIpAndAttachLicenseAndAddToGroup() private
+        logTest("test_GroupingIntegration_multicall_mintAndRegisterIpAndAttachLicenseAndAddToGroup")
+    {
         uint256 deadline = block.timestamp + 1000;
         uint256 numCalls = 10;
         // Get the signatures for setting the permission for calling `addIp` function in `GroupingModule`
@@ -221,7 +227,9 @@ contract GroupingIntegration is BaseIntegration {
         }
     }
 
-    function _test_GroupingIntegration_multicall_registerIpAndAttachLicenseAndAddToGroup() private {
+    function _test_GroupingIntegration_multicall_registerIpAndAttachLicenseAndAddToGroup() private
+        logTest("test_GroupingIntegration_multicall_registerIpAndAttachLicenseAndAddToGroup")
+    {
         uint256 numCalls = 10;
 
         StoryUSD.mint(testSender, testMintFee * numCalls);

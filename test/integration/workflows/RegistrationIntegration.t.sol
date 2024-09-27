@@ -25,18 +25,19 @@ contract RegistrationIntegration is BaseIntegration {
     function run() public override {
         super.run();
         _beginBroadcast();
-        _logTestStart("RegistrationIntegration");
         _test_RegistrationIntegration_createCollection();
         _test_RegistrationIntegration_createCollection();
         _test_RegistrationIntegration_mintAndRegisterIp();
         _test_RegistrationIntegration_registerIp();
         _test_RegistrationIntegration_multicall_createCollection();
         _test_RegistrationIntegration_multicall_mintAndRegisterIp();
-        _logTestEnd("RegistrationIntegration");
         _endBroadcast();
     }
 
-    function _test_RegistrationIntegration_createCollection() private {
+    function _test_RegistrationIntegration_createCollection()
+        private
+        logTest("test_RegistrationIntegration_createCollection")
+    {
         spgNftContract = ISPGNFT(
             registrationWorkflows.createCollection(
                 ISPGNFT.InitParams({
@@ -67,7 +68,9 @@ contract RegistrationIntegration is BaseIntegration {
         assertTrue(spgNftContract.publicMinting());
     }
 
-    function _test_RegistrationIntegration_mintAndRegisterIp() private {
+    function _test_RegistrationIntegration_mintAndRegisterIp() private
+        logTest("test_RegistrationIntegration_mintAndRegisterIp")
+    {
         StoryUSD.mint(testSender, testMintFee);
         StoryUSD.approve(address(spgNftContract), testMintFee);
         (address ipId, uint256 tokenId) = registrationWorkflows.mintAndRegisterIp({
@@ -82,7 +85,7 @@ contract RegistrationIntegration is BaseIntegration {
         assertMetadata(ipId, testIpMetadata);
     }
 
-    function _test_RegistrationIntegration_registerIp() private {
+    function _test_RegistrationIntegration_registerIp() private logTest("test_RegistrationIntegration_registerIp") {
         StoryUSD.mint(testSender, testMintFee);
         StoryUSD.approve(address(spgNftContract), testMintFee);
         uint256 tokenId = spgNftContract.mint(testSender, "");
@@ -118,7 +121,9 @@ contract RegistrationIntegration is BaseIntegration {
         assertMetadata(actualIpId, testIpMetadata);
     }
 
-    function _test_RegistrationIntegration_multicall_createCollection() private {
+    function _test_RegistrationIntegration_multicall_createCollection() private
+        logTest("test_RegistrationIntegration_multicall_createCollection")
+    {
         uint256 totalCollections = 10;
 
         ISPGNFT[] memory nftContracts = new ISPGNFT[](totalCollections);
@@ -159,7 +164,9 @@ contract RegistrationIntegration is BaseIntegration {
         }
     }
 
-    function _test_RegistrationIntegration_multicall_mintAndRegisterIp() private {
+    function _test_RegistrationIntegration_multicall_mintAndRegisterIp() private
+        logTest("test_RegistrationIntegration_multicall_mintAndRegisterIp")
+    {
         uint256 totalIps = 10;
         StoryUSD.mint(testSender, testMintFee * totalIps);
         StoryUSD.approve(address(spgNftContract), testMintFee * totalIps);

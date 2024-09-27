@@ -71,6 +71,12 @@ contract BaseIntegration is Test, Script, StoryProtocolCoreAddressManager, Story
     address internal testMintFeeToken;
     WorkflowStructs.IPMetadata internal testIpMetadata;
 
+    modifier logTest(string memory testName) {
+        console2.log(unicode"🏃 Running", testName, "...");
+        _;
+        console2.log(unicode"✅", testName, "passed!");
+    }
+
     function run() public virtual {
         _setUp();
     }
@@ -121,16 +127,6 @@ contract BaseIntegration is Test, Script, StoryProtocolCoreAddressManager, Story
 
     function _endBroadcast() internal {
         vm.stopBroadcast();
-    }
-
-    function _logTestStart(string memory testName) internal pure {
-        console2.log("==================================");
-        console2.log("Running test", testName, "...");
-    }
-
-    function _logTestEnd(string memory testName) internal pure {
-        console2.log("Test", testName, " passed!");
-        console2.log("==================================");
     }
 
     /*//////////////////////////////////////////////////////////////////////////
