@@ -31,12 +31,6 @@ contract UpgradeSPGNFT is UpgradeHelper {
     }
 
     function _deploySPGNFT() private {
-        _writeAddress("DerivativeWorkflows", address(derivativeWorkflows));
-        _writeAddress("GroupingWorkflows", address(groupingWorkflows));
-        _writeAddress("LicenseAttachmentWorkflows", address(licenseAttachmentWorkflows));
-        _writeAddress("RegistrationWorkflows", address(registrationWorkflows));
-        _writeAddress("RoyaltyWorkflows", address(royaltyWorkflows));
-        _writeAddress("SPGNFTBeacon", address(spgNftBeacon));
         _predeploy("SPGNFTImpl");
         spgNftImpl = new SPGNFT(
             address(derivativeWorkflows),
@@ -44,7 +38,8 @@ contract UpgradeSPGNFT is UpgradeHelper {
             address(licenseAttachmentWorkflows),
             address(registrationWorkflows)
         );
-        console2.log("New SPGNFT Implementation: ", address(spgNftImpl));
-        _postdeploy("SPGNFTImpl", address(spgNftImpl));
+        spgNftImplAddr = address(spgNftImpl);
+        console2.log("SPGNFTImpl deployed to: ", spgNftImplAddr);
+        _writeAllAddresses();
     }
 }
