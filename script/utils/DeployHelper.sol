@@ -141,7 +141,7 @@ contract DeployHelper is
         writeDeploys = writeDeploys_;
 
         // This will run OZ storage layout check for all contracts. Requires --ffi flag.
-        if (runStorageLayoutCheck) super.run();
+        if (runStorageLayoutCheck) _validate(); // StorageLayoutChecker.s.sol
 
         if (isTest) {
             // local test deployment
