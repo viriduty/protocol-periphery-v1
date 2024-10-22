@@ -306,8 +306,7 @@ contract GroupingWorkflows is
                     licenseTermsId: groupLicenseTermsId,
                     amount: 1,
                     receiver: msg.sender,
-                    royaltyContext: "",
-                    maxMintingFee: 0
+                    royaltyContext: ""
                 });
             }
         }
