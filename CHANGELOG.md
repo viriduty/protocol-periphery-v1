@@ -1,5 +1,17 @@
 # CHANGELOG
 
+## v1.2.4
+
+* Introduced Story NFT with various enhancements:
+  * Enabled URI changes post deployment
+  * Added upgrade scripts
+  * Resolved reentrancy vulnerability
+* Implemented ERC-7572 contract-level metadata support
+* Added permission handling in `registerPILTermsAndAttach`
+* Added royalty claiming for group IPs
+
+**Full Changelog**: [v1.2.3...v1.2.4](https://github.com/storyprotocol/protocol-periphery-v1/compare/v1.2.3...v1.2.4)
+
 ## v1.2.3
 
 * Refactored SPG into "workflow" contracts and introduced `RoyaltyWorkflows` for IP Revenue Claiming
