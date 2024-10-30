@@ -61,6 +61,45 @@ contract GroupingWorkflowsTest is BaseTest {
         _setupIPs();
     }
 
+    function test_GroupingWorkflows_revert_DuplicatedNFTMetadataHash() public {
+        uint256 deadline = block.timestamp + 1000;
+
+        (bytes memory sigAddToGroup, bytes32 expectedState, ) = _getSetPermissionSigForPeriphery({
+            ipId: groupId,
+            to: address(groupingWorkflows),
+            module: address(groupingModule),
+            selector: IGroupingModule.addIp.selector,
+            deadline: deadline,
+            state: IIPAccount(payable(groupId)).state(),
+            signerSk: groupOwnerSk
+        });
+
+        vm.startPrank(minter);
+        vm.expectRevert(
+            abi.encodeWithSelector(
+                Errors.SPGNFT__DuplicatedNFTMetadataHash.selector,
+                address(spgNftPublic),
+                1,
+                ipMetadataDefault.nftMetadataHash
+            )
+        );
+        groupingWorkflows.mintAndRegisterIpAndAttachLicenseAndAddToGroup({
+            spgNftContract: address(spgNftPublic),
+            groupId: groupId,
+            recipient: minter,
+            ipMetadata: ipMetadataDefault,
+            licenseTemplate: address(pilTemplate),
+            licenseTermsId: testLicenseTermsId,
+            sigAddToGroup: WorkflowStructs.SignatureData({
+                signer: groupOwner,
+                deadline: deadline,
+                signature: sigAddToGroup
+            }),
+            allowDuplicates: false
+        });
+        vm.stopPrank();
+    }
+
     // Mint → Register IP → Attach license terms → Add new IP to group IPA
     function test_GroupingWorkflows_mintAndRegisterIpAndAttachLicenseAndAddToGroup() public {
         uint256 deadline = block.timestamp + 1000;
@@ -89,7 +128,8 @@ contract GroupingWorkflowsTest is BaseTest {
                 signer: groupOwner,
                 deadline: deadline,
                 signature: sigAddToGroup
-            })
+            }),
+            allowDuplicates: true
         });
         vm.stopPrank();
 
@@ -277,7 +317,8 @@ contract GroupingWorkflowsTest is BaseTest {
                 maxMintingFee: 0
             }),
             ipMetadata: ipMetadataDefault,
-            recipient: ipOwner1
+            recipient: ipOwner1,
+            allowDuplicates: true
         });
         vm.stopPrank();
 
@@ -296,7 +337,8 @@ contract GroupingWorkflowsTest is BaseTest {
                 maxMintingFee: 0
             }),
             ipMetadata: ipMetadataDefault,
-            recipient: ipOwner2
+            recipient: ipOwner2,
+            allowDuplicates: true
         });
         vm.stopPrank();
 
@@ -399,7 +441,8 @@ contract GroupingWorkflowsTest is BaseTest {
                 pilTemplate,
                 testLicenseTermsId,
                 ipMetadataDefault,
-                WorkflowStructs.SignatureData({ signer: groupOwner, deadline: deadline, signature: sigsAddToGroup[i] })
+                WorkflowStructs.SignatureData({ signer: groupOwner, deadline: deadline, signature: sigsAddToGroup[i] }),
+                true
             );
         }
 
@@ -542,7 +585,8 @@ contract GroupingWorkflowsTest is BaseTest {
                 registrationWorkflows.mintAndRegisterIp.selector,
                 address(spgNftPublic),
                 minter,
-                ipMetadataDefault
+                ipMetadataDefault,
+                true
             );
         }
 

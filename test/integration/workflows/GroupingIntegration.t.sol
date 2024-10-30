@@ -79,7 +79,8 @@ contract GroupingIntegration is BaseIntegration {
                 signer: testSender,
                 deadline: deadline,
                 signature: sigAddToGroup
-            })
+            }),
+            allowDuplicates: true
         });
 
         assertEq(IIPAccount(payable(groupId)).state(), expectedState);
@@ -98,7 +99,12 @@ contract GroupingIntegration is BaseIntegration {
     {
         StoryUSD.mint(testSender, testMintFee);
         StoryUSD.approve(address(spgNftContract), testMintFee);
-        uint256 tokenId = spgNftContract.mint(testSender, testIpMetadata.nftMetadataURI);
+        uint256 tokenId = spgNftContract.mint({
+            to: testSender,
+            nftMetadataURI: testIpMetadata.nftMetadataURI,
+            nftMetadataHash: testIpMetadata.nftMetadataHash,
+            allowDuplicates: true
+        });
 
         // get the expected IP ID
         address expectedIpId = ipAssetRegistry.ipId(block.chainid, address(spgNftContract), tokenId);
@@ -231,7 +237,8 @@ contract GroupingIntegration is BaseIntegration {
                 maxMintingFee: 0
             }),
             ipMetadata: testIpMetadata,
-            recipient: testSender
+            recipient: testSender,
+            allowDuplicates: true
         });
 
         StoryUSD.mint(testSender, testMintFee);
@@ -246,7 +253,8 @@ contract GroupingIntegration is BaseIntegration {
                 maxMintingFee: 0
             }),
             ipMetadata: testIpMetadata,
-            recipient: testSender
+            recipient: testSender,
+            allowDuplicates: true
         });
 
         uint256 amount1 = 1_000 * 10 ** StoryUSD.decimals(); // 1,000 tokens
@@ -367,7 +375,12 @@ contract GroupingIntegration is BaseIntegration {
         // mint a NFT from the spgNftContract
         uint256[] memory tokenIds = new uint256[](numCalls);
         for (uint256 i = 0; i < numCalls; i++) {
-            tokenIds[i] = spgNftContract.mint(testSender, testIpMetadata.nftMetadataURI);
+            tokenIds[i] = spgNftContract.mint({
+                to: testSender,
+                nftMetadataURI: testIpMetadata.nftMetadataURI,
+                nftMetadataHash: testIpMetadata.nftMetadataHash,
+                allowDuplicates: true
+            });
         }
 
         // get the expected IP ID
