@@ -68,7 +68,7 @@ contract UpgradeHelper is
     }
 
     function _writeAllAddresses() internal {
-        string[] memory contractKeys = new string[](10);
+        string[] memory contractKeys = new string[](11);
         contractKeys[0] = "DerivativeWorkflows";
         contractKeys[1] = "GroupingWorkflows";
         contractKeys[2] = "LicenseAttachmentWorkflows";
@@ -76,11 +76,12 @@ contract UpgradeHelper is
         contractKeys[4] = "RoyaltyWorkflows";
         contractKeys[5] = "SPGNFTBeacon";
         contractKeys[6] = "SPGNFTImpl";
-        contractKeys[7] = "DefaultStoryNftTemplate";
-        contractKeys[8] = "OrgNFT";
-        contractKeys[9] = "StoryNFTFactory";
+        contractKeys[7] = "DefaultOrgStoryNFTTemplate";
+        contractKeys[8] = "DefaultOrgStoryNFTBeacon";
+        contractKeys[9] = "OrgNFT";
+        contractKeys[10] = "OrgStoryNFTFactory";
 
-        address[] memory addresses = new address[](10);
+        address[] memory addresses = new address[](11);
         addresses[0] = derivativeWorkflowsAddr;
         addresses[1] = groupingWorkflowsAddr;
         addresses[2] = licenseAttachmentWorkflowsAddr;
@@ -88,9 +89,10 @@ contract UpgradeHelper is
         addresses[4] = royaltyWorkflowsAddr;
         addresses[5] = spgNftBeaconAddr;
         addresses[6] = spgNftImplAddr;
-        addresses[7] = defaultStoryNftTemplateAddr;
-        addresses[8] = orgNftAddr;
-        addresses[9] = storyNftFactoryAddr;
+        addresses[7] = defaultOrgStoryNftTemplateAddr;
+        addresses[8] = defaultOrgStoryNftBeaconAddr;
+        addresses[9] = orgNftAddr;
+        addresses[10] = orgStoryNftFactoryAddr;
 
         for (uint256 i = 0; i < contractKeys.length; i++) {
             _writeAddress(contractKeys[i], addresses[i]);
