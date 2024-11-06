@@ -49,6 +49,20 @@ abstract contract CachableNFT is OwnableUpgradeable {
         return $.cache.length();
     }
 
+    /// @notice Returns the cache mode.
+    /// @return The cache mode, true for cache mode, false for passthrough mode.
+    function getCacheMode() external view returns (bool) {
+        return _getCacheableNFTStorage().cacheMode;
+    }
+
+    /// @notice Returns the NFT at the given index in the cache.
+    /// @param index The index of the NFT in the cache.
+    /// @return tokenId The token ID of the NFT.
+    /// @return ipId The IP ID of the NFT.
+    function getCacheAtIndex(uint256 index) external view returns (uint256 tokenId, address ipId) {
+        return _getCacheableNFTStorage().cache.at(index);
+    }
+
     /// @notice Transfers the first NFT from the cache to the recipient.
     /// @param recipient The recipient of the NFT.
     /// @return tokenId The token ID of the transferred NFT.
@@ -59,7 +73,7 @@ abstract contract CachableNFT is OwnableUpgradeable {
             return (0, address(0));
         }
         (tokenId, ipId) = $.cache.at(0);
-        $.cache.remove(0);
+        $.cache.remove(tokenId);
 
         _transferFrom(address(this), recipient, tokenId);
     }
