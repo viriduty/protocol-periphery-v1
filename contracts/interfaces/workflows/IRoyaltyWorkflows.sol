@@ -4,73 +4,45 @@ pragma solidity 0.8.26;
 /// @title Royalty Workflows Interface
 /// @notice Interface for IP royalty workflows.
 interface IRoyaltyWorkflows {
-    /// @notice Details for claiming royalties from a child IP.
-    /// @param childIpId The address of the child IP.
-    /// @param royaltyPolicy The address of the royalty policy.
-    /// @param currencyToken The address of the currency (revenue) token to claim.
-    /// @param amount The amount of currency (revenue) token to claim.
-    struct RoyaltyClaimDetails {
-        address childIpId;
-        address royaltyPolicy;
-        address currencyToken;
-        uint256 amount;
-    }
-
-    /// @notice Transfers royalties from royalty policy to the ancestor IP's royalty vault, takes a snapshot,
-    /// and claims revenue on that snapshot for each specified currency token.
-    /// @param ancestorIpId The address of the ancestor IP.
-    /// @param claimer The address of the claimer of the revenue tokens (must be a royalty token holder).
-    /// @param royaltyClaimDetails The details of the royalty claim from child IPs,
-    /// see {IRoyaltyWorkflows-RoyaltyClaimDetails}.
-    /// @return snapshotId The ID of the snapshot taken.
-    /// @return amountsClaimed The amount of revenue claimed for each currency token.
-    function transferToVaultAndSnapshotAndClaimByTokenBatch(
+    /// @notice Transfers specified amounts of royalties from various royalty policies to the royalty
+    ///         vault of an ancestor IP, and claims all the revenue for each currency token from the
+    ///         ancestor IP's royalty vault to the claimer.
+    /// @param ancestorIpId The address of the ancestor IP from which the revenue is being claimed.
+    /// @param claimer The address of the claimer of the currency (revenue) tokens.
+    /// @param childIpIds The addresses of the child IPs from which royalties are derived.
+    /// @param royaltyPolicies The addresses of the royalty policies, where royaltyPolicies[i] governs
+    ///        the royalty flow for childIpIds[i].
+    /// @param currencyTokens The addresses of the currency tokens in which royalties will be claimed,
+    ///        where currencyTokens[i] is the token used for royalties from childIpIds[i].
+    /// @param amounts The amounts to transfer and claim, where amounts[i] represents the amount of
+    ///        royalties in currencyTokens[i] to transfer from childIpIds[i]'s royaltyPolicies[i] to the ancestor's
+    ///        royalty vault.
+    /// @return amountsClaimed The amounts of successfully claimed revenue for each specified currency token.
+    function transferToVaultAndClaimByTokenBatch(
         address ancestorIpId,
         address claimer,
-        RoyaltyClaimDetails[] calldata royaltyClaimDetails
-    ) external returns (uint256 snapshotId, uint256[] memory amountsClaimed);
+        address[] calldata childIpIds,
+        address[] calldata royaltyPolicies,
+        address[] calldata currencyTokens,
+        uint256[] calldata amounts
+    ) external returns (uint256[] memory amountsClaimed);
 
-    /// @notice Transfers royalties to the ancestor IP's royalty vault, takes a snapshot, claims revenue for each
-    /// specified currency token both on the new snapshot and on each specified unclaimed snapshots.
-    /// @param ancestorIpId The address of the ancestor IP.
-    /// @param claimer The address of the claimer of the revenue tokens (must be a royalty token holder).
-    /// @param unclaimedSnapshotIds The IDs of unclaimed snapshots to include in the claim.
-    /// @param royaltyClaimDetails The details of the royalty claim from child IPs,
-    /// see {IRoyaltyWorkflows-RoyaltyClaimDetails}.
-    /// @return snapshotId The ID of the snapshot taken.
-    /// @return amountsClaimed The amounts of revenue claimed for each currency token.
-    function transferToVaultAndSnapshotAndClaimBySnapshotBatch(
+    /// @notice Transfers all avaiable royalties from various royalty policies to the royalty
+    ///         vault of an ancestor IP, and claims all the revenue for each currency token
+    ///         from the ancestor IP's royalty vault to the claimer.
+    /// @param ancestorIpId The address of the ancestor IP from which the revenue is being claimed.
+    /// @param claimer The address of the claimer of the currency (revenue) tokens.
+    /// @param childIpIds The addresses of the child IPs from which royalties are derived.
+    /// @param royaltyPolicies The addresses of the royalty policies, where royaltyPolicies[i] governs
+    ///        the royalty flow for childIpIds[i].
+    /// @param currencyTokens The addresses of the currency tokens in which royalties will be claimed,
+    ///        where currencyTokens[i] is the token used for royalties from childIpIds[i].
+    /// @return amountsClaimed The amounts of successfully claimed revenue for each specified currency token.
+    function claimAllRevenue(
         address ancestorIpId,
         address claimer,
-        uint256[] calldata unclaimedSnapshotIds,
-        RoyaltyClaimDetails[] calldata royaltyClaimDetails
-    ) external returns (uint256 snapshotId, uint256[] memory amountsClaimed);
-
-    /// @notice Takes a snapshot of the IP's royalty vault and claims revenue on that snapshot for each
-    /// specified currency token.
-    /// @param ipId The address of the IP.
-    /// @param claimer The address of the claimer of the revenue tokens (must be a royalty token holder).
-    /// @param currencyTokens The addresses of the currency (revenue) tokens to claim.
-    /// @return snapshotId The ID of the snapshot taken.
-    /// @return amountsClaimed The amounts of revenue claimed for each currency token.
-    function snapshotAndClaimByTokenBatch(
-        address ipId,
-        address claimer,
+        address[] calldata childIpIds,
+        address[] calldata royaltyPolicies,
         address[] calldata currencyTokens
-    ) external returns (uint256 snapshotId, uint256[] memory amountsClaimed);
-
-    /// @notice Takes a snapshot of the IP's royalty vault and claims revenue for each specified currency token
-    /// both on the new snapshot and on each specified unclaimed snapshot.
-    /// @param ipId The address of the IP.
-    /// @param claimer The address of the claimer of the revenue tokens (must be a royalty token holder).
-    /// @param unclaimedSnapshotIds The IDs of unclaimed snapshots to include in the claim.
-    /// @param currencyTokens The addresses of the currency (revenue) tokens to claim.
-    /// @return snapshotId The ID of the snapshot taken.
-    /// @return amountsClaimed The amounts of revenue claimed for each currency token.
-    function snapshotAndClaimBySnapshotBatch(
-        address ipId,
-        address claimer,
-        uint256[] calldata unclaimedSnapshotIds,
-        address[] calldata currencyTokens
-    ) external returns (uint256 snapshotId, uint256[] memory amountsClaimed);
+    ) external returns (uint256[] memory amountsClaimed);
 }
