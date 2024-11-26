@@ -118,8 +118,7 @@ contract GroupingWorkflows is
     /// @param spgNftContract The address of the SPGNFT collection.
     /// @param groupId The ID of the group IP to add the newly registered IP.
     /// @param recipient The address of the recipient of the minted NFT.
-    /// @param licenseTemplate The address of the license template to be attached to the new IP.
-    /// @param licenseTermsId The ID of the registered license terms that will be attached to the new IP.
+    /// @param licenseInfo The information of the license terms that will be attached to the new IP.
     /// @param ipMetadata OPTIONAL. The desired metadata for the newly minted NFT and registered IP.
     /// @param sigAddToGroup Signature data for addIp to the group IP via the Grouping Module.
     /// @param allowDuplicates Set to true to allow minting an NFT with a duplicate metadata hash.
@@ -129,8 +128,7 @@ contract GroupingWorkflows is
         address spgNftContract,
         address groupId,
         address recipient,
-        address licenseTemplate,
-        uint256 licenseTermsId,
+        WorkflowStructs.LicenseInfo[] calldata licenseInfo,
         WorkflowStructs.IPMetadata calldata ipMetadata,
         WorkflowStructs.SignatureData calldata sigAddToGroup,
         bool allowDuplicates
@@ -147,23 +145,32 @@ contract GroupingWorkflows is
         MetadataHelper.setMetadata(ipId, address(CORE_METADATA_MODULE), ipMetadata);
 
         // attach license terms to the IP, do nothing if already attached
-        LicensingHelper.attachLicenseTerms(ipId, address(LICENSING_MODULE), licenseTemplate, licenseTermsId);
+        for (uint256 i = 0; i < licenseInfo.length; i++) {
+            LicensingHelper.attachLicenseTerms(
+                ipId,
+                address(LICENSING_MODULE),
+                licenseInfo[i].licenseTemplate,
+                licenseInfo[i].licenseTermsId
+            );
+        }
 
         address[] memory ipIds = new address[](1);
         ipIds[0] = ipId;
+
+        bytes memory data = abi.encodeWithSelector(
+            IAccessController.setPermission.selector,
+            groupId,
+            address(this),
+            address(GROUPING_MODULE),
+            IGroupingModule.addIp.selector,
+            AccessPermission.ALLOW
+        );
 
         // set the permission for calling `addIp` function in `GroupingModule` on behalf of the Group IP owner
         IIPAccount(payable(groupId)).executeWithSig({
             to: address(ACCESS_CONTROLLER),
             value: 0,
-            data: abi.encodeWithSelector(
-                IAccessController.setPermission.selector,
-                groupId,
-                address(this),
-                address(GROUPING_MODULE),
-                IGroupingModule.addIp.selector,
-                AccessPermission.ALLOW
-            ),
+            data: data,
             signer: sigAddToGroup.signer,
             deadline: sigAddToGroup.deadline,
             signature: sigAddToGroup.signature
@@ -179,52 +186,47 @@ contract GroupingWorkflows is
     /// @param nftContract The address of the NFT collection.
     /// @param tokenId The ID of the NFT.
     /// @param groupId The ID of the group IP to add the newly registered IP.
-    /// @param licenseTemplate The address of the license template to be attached to the new IP.
-    /// @param licenseTermsId The ID of the registered license terms that will be attached to the new IP.
+    /// @param licenseInfo The information of the license terms that will be attached to the new IP.
     /// @param ipMetadata OPTIONAL. The desired metadata for the newly registered IP.
     /// @param sigMetadata OPTIONAL. Signature data for setAll (metadata) for the IP via the Core Metadata Module.
-    /// @param sigAttach Signature data for attachLicenseTerms to the IP via the Licensing Module.
+    /// @param sigsAttach Signature data for attachLicenseTerms to the IP via the Licensing Module.
+    ///        The i th signature data is for attaching the i th license terms registered in the i th license template
+    ///        to the IP.
     /// @param sigAddToGroup Signature data for addIp to the group IP via the Grouping Module.
     /// @return ipId The ID of the newly registered IP.
     function registerIpAndAttachLicenseAndAddToGroup(
         address nftContract,
         uint256 tokenId,
         address groupId,
-        address licenseTemplate,
-        uint256 licenseTermsId,
+        WorkflowStructs.LicenseInfo[] calldata licenseInfo,
         WorkflowStructs.IPMetadata calldata ipMetadata,
         WorkflowStructs.SignatureData calldata sigMetadata,
-        WorkflowStructs.SignatureData calldata sigAttach,
+        WorkflowStructs.SignatureData[] calldata sigsAttach,
         WorkflowStructs.SignatureData calldata sigAddToGroup
     ) external returns (address ipId) {
         ipId = IP_ASSET_REGISTRY.register(block.chainid, nftContract, tokenId);
-
-        address[] memory modules = new address[](2);
-        bytes4[] memory selectors = new bytes4[](2);
-        modules[0] = address(CORE_METADATA_MODULE);
-        modules[1] = address(LICENSING_MODULE);
-        selectors[0] = ICoreMetadataModule.setAll.selector;
-        selectors[1] = ILicensingModule.attachLicenseTerms.selector;
-
         MetadataHelper.setMetadataWithSig(ipId, address(CORE_METADATA_MODULE), ipMetadata, sigMetadata);
 
         // attach license terms to the IP, do nothing if already attached
-        LicensingHelper.attachLicenseTermsWithSig(
-            ipId,
-            address(LICENSING_MODULE),
-            licenseTemplate,
-            licenseTermsId,
-            sigAttach
-        );
+        for (uint256 i = 0; i < licenseInfo.length; i++) {
+            LicensingHelper.attachLicenseTermsWithSig(
+                ipId,
+                address(LICENSING_MODULE),
+                licenseInfo[i].licenseTemplate,
+                licenseInfo[i].licenseTermsId,
+                sigsAttach[i]
+            );
+        }
 
         address[] memory ipIds = new address[](1);
         ipIds[0] = ipId;
 
+        bytes memory data = abi.encodeWithSelector(IGroupingModule.addIp.selector, groupId, ipIds);
         // execute `addIp` function in `GroupingModule` on behalf of the Group IP owner
         IIPAccount(payable(groupId)).executeWithSig({
             to: address(GROUPING_MODULE),
             value: 0,
-            data: abi.encodeWithSelector(IGroupingModule.addIp.selector, groupId, ipIds),
+            data: data,
             signer: sigAddToGroup.signer,
             deadline: sigAddToGroup.deadline,
             signature: sigAddToGroup.signature
@@ -233,18 +235,21 @@ contract GroupingWorkflows is
 
     /// @notice Register a group IP with a group reward pool and attach license terms to the group IP
     /// @param groupPool The address of the group reward pool.
-    /// @param licenseTemplate The address of the license template to be attached to the new group IP.
-    /// @param licenseTermsId The ID of the registered license terms that will be attached to the new group IP.
+    /// @param licenseInfo The information of the license terms that will be attached to the new group IP.
     /// @return groupId The ID of the newly registered group IP.
     function registerGroupAndAttachLicense(
         address groupPool,
-        address licenseTemplate,
-        uint256 licenseTermsId
+        WorkflowStructs.LicenseInfo calldata licenseInfo
     ) external returns (address groupId) {
         groupId = GROUPING_MODULE.registerGroup(groupPool);
 
         // attach license terms to the group IP, do nothing if already attached
-        LicensingHelper.attachLicenseTerms(groupId, address(LICENSING_MODULE), licenseTemplate, licenseTermsId);
+        LicensingHelper.attachLicenseTerms(
+            groupId,
+            address(LICENSING_MODULE),
+            licenseInfo.licenseTemplate,
+            licenseInfo.licenseTermsId
+        );
 
         GROUP_NFT.safeTransferFrom(address(this), msg.sender, GROUP_NFT.totalSupply() - 1);
     }
@@ -254,19 +259,22 @@ contract GroupingWorkflows is
     /// @dev ipIds must have the same PIL terms as the group IP.
     /// @param groupPool The address of the group reward pool.
     /// @param ipIds The IDs of the IPs to add to the newly registered group IP.
-    /// @param licenseTemplate The address of the license template to be attached to the new group IP.
-    /// @param licenseTermsId The ID of the registered license terms that will be attached to the new group IP.
+    /// @param licenseInfo The information of the license terms that will be attached to the new group IP.
     /// @return groupId The ID of the newly registered group IP.
     function registerGroupAndAttachLicenseAndAddIps(
         address groupPool,
         address[] calldata ipIds,
-        address licenseTemplate,
-        uint256 licenseTermsId
+        WorkflowStructs.LicenseInfo calldata licenseInfo
     ) external returns (address groupId) {
         groupId = GROUPING_MODULE.registerGroup(groupPool);
 
         // attach license terms to the group IP, do nothing if already attached
-        LicensingHelper.attachLicenseTerms(groupId, address(LICENSING_MODULE), licenseTemplate, licenseTermsId);
+        LicensingHelper.attachLicenseTerms(
+            groupId,
+            address(LICENSING_MODULE),
+            licenseInfo.licenseTemplate,
+            licenseInfo.licenseTermsId
+        );
 
         GROUPING_MODULE.addIp(groupId, ipIds);
 
